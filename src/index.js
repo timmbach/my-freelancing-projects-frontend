@@ -1,13 +1,58 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import ErrorPage from "./pages/error-page";
+import Header from "./components/Header";
+import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
+import Home from "./pages/Home";
+import Project from "./pages/Project";
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const cache = new InMemoryCache({
+  typePolicies: {
+    Query: {
+      fields: {
+        clients: {
+          merge(existing, incoming) {
+            return incoming;
+          },
+        },
+        projects: {
+          merge(existing, incoming) {
+            return incoming;
+          },
+        },
+      },
+    },
+  },
+});
+
+const client = new ApolloClient({
+  uri: "https://my-freelancer-projects.onrender.com/graphql",
+  cache: cache,
+});
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Home />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/projects/:id",
+    element: <Project />,
+  },
+]);
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <App />
+    <ApolloProvider client={client}>
+      <Header />
+      <RouterProvider router={router} />
+    </ApolloProvider>
   </React.StrictMode>
 );
 
